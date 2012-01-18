@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BootstrapJS Modal and HTML5 localStorage</title>
+  <link rel="stylesheet" href="/css/bootstrap.1.4.0.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/shadowbox/shadowbox.css">
+</head>
+<body>
+<div class="container center">
+<h1>Bootstrap JS Modal and HTML5 localStorage</h1>
+<div id="video"></div>
+
+<!-- configuration -->
+<div id="configuration" class="modal hide fade">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>Configuration</h3>
+  </div>
+  <div class="modal-body">
+    <p>Choose your choice.</p>
+    <div id="input-list">
+        <input class="tag" value="hoge" type="checkbox" /> hoge<br />
+        <input class="tag" value="fuga" type="checkbox" /> fuga<br />
+        <input class="tag" value="piyo" type="checkbox" /> piyo<br />
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a class="btn primary">Save</a>
+    <a class="btn secondary">Cancel</a>
+  </div>
+</div>
+<!-- info -->
+<div id="information" class="modal hide fade">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>Information</h3>
+  </div>
+  <div class="modal-body">
+    <table>
+        <tr>
+            <th style="border-top:none;">Artist</th><td style="border-top:none;">-</td>
+        </tr>
+        <tr>
+            <th>Title</th><td class="title">-</td>
+        </tr>
+        <tr>
+            <th>Album</th><td class="album">-</td>
+        </tr>
+        <tr>
+            <th>PlaybackQuality</th><td class="quality">-</td>
+        </tr>
+        <tr>
+            <th>AvailableQualityLevels</th><td class="qualities">-</td>
+        </tr>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <a class="btn primary">Close</a>
+  </div>
+</div>
+
+<div>
+<button id="prev" class="btn">Prev</button>
+<button id="next" class="btn">Next</button>
+<button class="btn" data-keyboard="true" data-backdrop="true" data-controls-modal="information">Info</button>
+<button class="btn" data-keyboard="true" data-backdrop="true" data-controls-modal="configuration">Launch Modal</button>
+</div>
+<div>
+    <a href="http://www.youtube.com/v/0EJ4Vzl9_gQ;autoplay=1&amp;enablejsapi=1&amp;playerapiid=ytplayer&amp;ext=.swf" title="" rel="shadowbox['username']" class="video">omarion</a>
+
+</div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script src="/js/libs/bootstrap-modal.1.4.0.min.js"></script>
+<script src="/js/libs/swfobject.js"></script>
+<script src="/shadowbox/shadowbox.js"></script>
+<script>
+var videoIds = ['lmaIefEd3qg','a5zi59coiBA','XkVpdB9gv9w','xYEAV0J70qc','0EJ4Vzl9_gQ','0sS4zJNp_10'];
+
+function getRandomIndex (items) {
+   return Math.floor( Math.random() * items.length); 
+}
+
+$('#configuration').modal({
+    backdrop: true,
+    keyboard: true
+})
+
+$('#information').modal({
+    backdrop: true,
+    keyboard: true
+})
+
+$('#configuration .primary').click(function(){
+    var tags = [];
+    $('#input-list').find('input:checked').each( function () {
+        tags.push( $(this).val() );
+    });
+
+    localStorage.setItem('configuration', JSON.stringify(tags));
+    $('#configuration').modal('hide');
+    return false;
+});
+
+$('#configuration .secondary').click(function(){
+    // XXX: reset checked input. (use localStorage.)
+    $('#configuration').modal('hide');
+});
+
+$('#information .primary').click(function(){
+    $('#information').modal('hide');
+});
+
+
+var player, currentIndex;
+
+if ($('#video').is(':empty')) {
+    currentIndex  = getRandomIndex(videoIds);
+    var vid    = videoIds[currentIndex];
+    var params = { allowScriptAccess: "always", allowFullScreen: "true" };
+    var atts   = { id: "player" };
+    swfobject.embedSWF("http://www.youtube.com/v/" + vid + "?enablejsapi=1&autoplay=0&playerapiid=player&rel=0&showinfo=0", "video", "480", "360", "8", null, null, params, atts);
+}
+
+var configuration = localStorage.getItem( "configuration" );
+
+function onYouTubePlayerReady(playerId) {
+    player = document.getElementById(playerId);
+    // 終了イベントを知る為のイベント登録
+    player.addEventListener("onStateChange", "onytplayerStateChange");
+}
+
+function onytplayerStateChange(newState) {
+    console.log(newState);
+    var stateOf = {
+      '-1':'unstarted',
+         0:'ended',
+         1:'playing',
+         2:'paused',
+         3:'buffering',
+         5:'video cued'
+    };
+
+    if ( newState === 5 ) {
+        $.ajax({
+            data: {
+                "alt":"json"
+            }, 
+            url:"http://gdata.youtube.com/feeds/api/videos/" + vid,
+            success: function (json) {
+                var data = eval("("+json+")");
+                console.log(data);
+                $('#information .title').text(data.entry.title.$t); 
+            }
+        }
+        );
+    }
+    else if ( newState === 1 ) {
+        var levelOf = player.getAvailableQualityLevels();
+        var qualities=[];
+        for(var key in levelOf ) {
+            qualities.push(levelOf[key]);
+        }
+        $('#information .quality').text(player.getPlaybackQuality()); 
+        $('#information .qualities').text(qualities.join(', '));
+    }
+    else if ( stateOf[newState] === 'ended' ) {
+
+        currentIndex++;
+        if ( currentIndex > videoIds.length - 1 ) {
+            currentIndex = 0;
+        }
+
+        player.loadVideoById( videoIds[currentIndex], 0);
+    }
+}
+
+
+Shadowbox.init({   
+    players:    ["swf", "html"]});
+window.onload = function(){
+  Shadowbox.setup(".video", {
+    modal: true,
+    width: $(window).width(),
+    height: $(window).width() / 16 * 9,
+    flashParams: { allowScriptAccess: "always" }
+  });
+};
+
+
+$('#next').click(function () {
+        currentIndex++;
+        if ( currentIndex > videoIds.length - 1 ) {
+            currentIndex = 0;
+        }
+
+        player.loadVideoById( videoIds[currentIndex], 0);
+    }
+);
+
+$('#prev').click(function () {
+        currentIndex--;
+        if ( currentIndex < 0 ) {
+            currentIndex = videoIds.length - 1;
+        }
+        player.loadVideoById( videoIds[currentIndex], 0);
+    }
+);
+
+
+</script>
+</body>
+</html>
+

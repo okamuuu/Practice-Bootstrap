@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bootstrap JS Popvers</title>
+  <link rel="stylesheet" href="/css/bootstrap.1.4.0.min.css">
+</head>
+<body>
+<h1>Practice of Bootstrap JS Popvers</h1>
+
+
+<a href="#" class="btn danger" rel="popover" title="A title" data-content="And here's some amazing content. It's very engaging. right?">hover for popover</a>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script src="/js/libs/bootstrap-twipsy.1.4.0.js"></script>
+<script src="/js/libs/bootstrap-popover.1.4.0.js"></script>
+<script>
+$(function () {
+  $("a[rel=popover]")
+    .popover({
+      offset: 10
+    })
+    .click(function(e) {
+      e.preventDefault()
+    })
+})
+</script>
+</body>
+</html>
+

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gallery</title>
+  <link rel="stylesheet" href="/css/bootstrap.1.4.0.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/shadowbox/shadowbox.css">
+</head>
+<body>
+<div class="container center">
+<h1>Gallery</h1>
+
+<div id="gallery">
+    <img src="https://p.twimg.com/AfeSfvJCEAAbeNy.jpg:large">
+    <img src="https://p.twimg.com/AfeSfvJCEAAbeNy.jpg:large">
+    <img src="https://p.twimg.com/AfeSfvJCEAAbeNy.jpg:large">
+    <img src="https://p.twimg.com/AfeSfvJCEAAbeNy.jpg:large">
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script src="/js/libs/bootstrap-modal.1.4.0.min.js"></script>
+<script src="/galleria/galleria-1.2.6.min.js"></script>
+<script>
+
+Galleria.loadTheme('galleria/themes/classic/galleria.classic.min.js');
+
+$("#gallery").galleria({
+    width: 500,
+    height: 500
+});
+
+</script>
+</body>
+</html>
+
